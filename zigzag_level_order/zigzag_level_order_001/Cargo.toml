@@ -1,5 +1,5 @@
 [package]
-name = "zigzag_level_order"
+name = "zigzag_level_order_001"
 version = "0.1.0"
 edition = "2021"
 
