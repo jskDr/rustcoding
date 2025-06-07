@@ -1,0 +1,7 @@
+[package]
+name = "nb_prelude"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+polars = { version = "0.48.0", features = ["csv", "lazy", "json", "parquet"] }
