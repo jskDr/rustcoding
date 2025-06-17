@@ -1,0 +1,6 @@
+[package]
+name = "top_k_frequent"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
