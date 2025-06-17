@@ -17,8 +17,9 @@ impl Solution {
             bh.pop();  // Keep heap at size k
         }
         let mut res = vec![];
-        while let Some(Reverse((_, n))) = bh.pop() {
-            res.push(n);
+        // while let Some(Reverse((_, n))) = bh.pop() {
+        while let Some(r) = bh.pop() {
+            res.push(r.0.1);
         }
         res
     }
