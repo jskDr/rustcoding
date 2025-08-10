@@ -1,0 +1,13 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: is-subsequence-test
+spec:
+  template:
+    spec:
+      containers:
+      - name: is-subsequence-test
+        image: is_subsequence-test:latest
+        imagePullPolicy: IfNotPresent
+      restartPolicy: Never
+  backoffLimit: 4
