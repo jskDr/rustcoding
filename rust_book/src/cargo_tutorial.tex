@@ -1,0 +1,60 @@
+\section{Understanding \texttt{cargo run} and Project Structure in Rust}
+\label{sec:understanding_cargo_run}
+
+This guide explains how Cargo runs different parts of your Rust project and the conventional way to structure examples and tutorials.
+
+\subsection{\texttt{cargo run}}
+\label{subsec:cargo_run}
+
+The standard \texttt{cargo run} command is used to compile and run the main binary of your project.
+
+\begin{itemize}
+    \item \textbf{For a Binary Crate:} If your project is an executable program, \texttt{cargo run} looks for a file named \texttt{src/main.rs}. It compiles this file and its dependencies and then runs the resulting program.
+    \item \textbf{For a Library Crate:} If your project is a library, it won't have a \texttt{src/main.rs} file. Running \texttt{cargo run} by itself will result in an error because Cargo doesn't know what to run.
+\end{itemize}
+
+\subsection{\texttt{cargo run --example <name>}}
+\label{subsec:cargo_run_example}
+
+This command is used to run specific example code.
+
+\begin{itemize}
+    \item It looks inside the \texttt{examples/} directory for a file named \texttt{<name>.rs}.
+    \item It compiles that file as a small, separate program that can use the functions and structs from your main library code (in \texttt{src/}).
+    \item This is the standard way in Rust to provide runnable examples that demonstrate your library's features.
+\end{itemize}
+
+For example, to run \texttt{examples/tree\_visualization.rs}, you would use:
+\begin{verbatim}
+cargo run --example tree_visualization
+\end{verbatim}
+
+\subsection{How to Create a \texttt{tutorials} Folder}
+\label{subsec:tutorials_folder}
+
+Cargo relies on specific folder names like \texttt{src}, \texttt{examples}, \texttt{tests}, and \texttt{benches}. A folder named \texttt{tutorials} is not a standard convention that Cargo has a special command for.
+
+The best and most idiomatic way to create tutorials is to \textbf{treat them as examples}.
+
+You can structure your project like this, placing your tutorial files inside the \texttt{examples} directory with descriptive names:
+
+\begin{verbatim}
+my_project/
+├── examples/
+│   ├── 01_basic_setup.rs
+│   ├── 02_advanced_usage.rs
+│   └── 03_a_full_tutorial.rs
+├── src/
+│   └── lib.rs
+└── Cargo.toml
+\end{verbatim}
+
+You would then run each tutorial just like any other example:
+
+\begin{verbatim}
+cargo run --example 01_basic_setup
+cargo run --example 02_advanced_usage
+cargo run --example 03_a_full_tutorial
+\end{verbatim}
+
+This approach works seamlessly with Cargo's built-in tooling and is the standard practice within the Rust community.

@@ -1,0 +1,45 @@
+%!TEX program = xelatex
+\documentclass{book}
+
+% --- Document Metadata ---
+\title{Rust Coding Tutorial}
+\author{Sungjin Kim}
+\date{\today}
+
+% --- Packages ---
+\usepackage{geometry}      % For page layout
+\usepackage{fontspec}
+\setmonofont{Courier New}
+\usepackage{hyperref}      % For hyperlinks
+\usepackage{graphicx}      % To include graphics
+\usepackage{amsmath}       % For math formulas
+\usepackage{xcolor}        % For colors
+
+% --- Page Layout ---
+\geometry{a4paper, margin=1in}
+
+% --- Hyperlink Setup ---
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+% --- Document Body ---
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\chapter{Getting Started with Cargo}
+\label{chap:getting_started}
+
+% This includes the section we created earlier
+\input{src/cargo_tutorial.tex}
+
+% You can add more sections or chapters here
+% \section{Another Section}
+% ...
+
+\end{document}

@@ -5,10 +5,3 @@ version = 4
 [[package]]
 name = "rust_coding_lib"
 version = "0.1.0"
-
-[[package]]
-name = "same_tree"
-version = "0.1.0"
-dependencies = [
- "rust_coding_lib",
-]

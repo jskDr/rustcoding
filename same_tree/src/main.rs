@@ -1,24 +1,6 @@
+use rust_coding_lib::treenode_lib::{TreeNode, TreeWrapper};
 use std::rc::Rc;
 use std::cell::RefCell;
-
-// Definition for a binary tree node.
-#[derive(Debug, PartialEq, Eq)]
-pub struct TreeNode {
-  pub val: i32,
-  pub left: Option<Rc<RefCell<TreeNode>>>, 
-  pub right: Option<Rc<RefCell<TreeNode>>>, 
-}
-
-impl TreeNode {
-  #[inline]
-  pub fn new(val: i32) -> Self {
-    TreeNode {
-      val,
-      left: None,
-      right: None
-    }
-  }
-}
 
 pub struct Solution;
 
@@ -90,7 +72,8 @@ fn main() {
         left: Some(Rc::new(RefCell::new(TreeNode::new(2)))),
         right: Some(Rc::new(RefCell::new(TreeNode::new(3)))),
     })));
-
+    println!("Tree 1: \n{:#?}", TreeWrapper(&p));
+    println!("Tree 2: \n{:#?}", TreeWrapper(&q));
     println!("Are the trees the same? {}", Solution::is_same_tree(p, q)); // Expected: true
 }
 

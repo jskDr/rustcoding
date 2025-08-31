@@ -1,0 +1,5 @@
+\contentsline {chapter}{\numberline {1}Getting Started with Cargo}{5}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Understanding \texttt {cargo run} and Project Structure in Rust}{5}{section.1.1}%
+\contentsline {subsection}{\numberline {1.1.1}\texttt {cargo run}}{5}{subsection.1.1.1}%
+\contentsline {subsection}{\numberline {1.1.2}\texttt {cargo run --example <name>}}{5}{subsection.1.1.2}%
+\contentsline {subsection}{\numberline {1.1.3}How to Create a \texttt {tutorials} Folder}{5}{subsection.1.1.3}%
