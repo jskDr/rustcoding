@@ -12,9 +12,7 @@ mod tests {
         
         // The custom Debug implementation for TreeWrapper will be used here.
         // The output will be a visual representation of the tree.
-        println!("
-Tree visualization:
-{:?}", TreeWrapper(&tree));
+        println!("\nTree visualization:\n{:?}", TreeWrapper(&tree));
     }
 
     #[test]

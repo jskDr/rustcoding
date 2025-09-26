@@ -1,8 +1,9 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::fmt;
+use std::collections::VecDeque;
 
-#[derive(PartialEq, Eq)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct TreeNode {
     pub val: i32,
     pub left: Option<Rc<RefCell<TreeNode>>>,
@@ -10,14 +11,14 @@ pub struct TreeNode {
 }
 
 impl TreeNode {
-    #[inline]
-    pub fn new(val: i32) -> Self {
-        TreeNode {
-            val,
-            left: None,
-            right: None,
-        }
+  #[inline]
+  pub fn new(val: i32) -> Self {
+    TreeNode {
+      val,
+      left: None,
+      right: None
     }
+  }
 }
 
 // A wrapper for Option<Rc<RefCell<TreeNode>>> to provide a custom Debug implementation.
@@ -60,7 +61,7 @@ pub fn to_tree(nodes: Vec<Option<i32>>) -> Option<Rc<RefCell<TreeNode>>> {
     }
 
     let root = Rc::new(RefCell::new(TreeNode::new(nodes[0].unwrap())));
-    let mut queue = std::collections::VecDeque::new();
+    let mut queue = VecDeque::new();
     queue.push_back(root.clone());
 
     let mut i = 1;

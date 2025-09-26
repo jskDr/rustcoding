@@ -28,6 +28,17 @@ pub fn to_list(vec: Vec<i32>) -> Option<Box<ListNode>> {
     current
 }
 
+
+pub fn print_list(head: Option<Box<ListNode>>) {
+    let mut current = head;
+    while let Some(node) = current {
+        print!("{} -> ", node.val);
+        current = node.next;
+    }
+    println!("None");
+}
+
+
 #[cfg(test)]
 mod tests {
     use super::*;
