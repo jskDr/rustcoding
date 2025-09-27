@@ -1,3 +1,4 @@
+// 2487. Remove Nodes From Linked List
 use colored::*;
 use rust_coding_lib::listnode_lib::{ListNode, to_list, print_list};
 
