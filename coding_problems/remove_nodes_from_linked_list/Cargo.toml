@@ -1,5 +1,5 @@
 [package]
-name = "remove_linked_list_elements"
+name = "remove_nodes_from_linked_list"
 version = "0.1.0"
 edition = "2024"
 

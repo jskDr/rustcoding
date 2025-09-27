@@ -1,4 +1,5 @@
 // 203. Remove Linked List Elements
+use colored::*;
 use rust_coding_lib::listnode_lib::{ListNode, to_list, print_list};
 
 struct Solution;
@@ -21,20 +22,32 @@ impl Solution {
 }
 
 
+fn case_test(head: Option<Box<ListNode>>, val: i32, expected_new_head: Option<Box<ListNode>>) {
+    let new_head = Solution::remove_elements(head.clone(), val);
+
+    print!("{}", "before remove: ".yellow());
+    print_list(head);
+    if new_head == expected_new_head {
+        print!("{}", "[Success] after remove: ".green());
+        print_list(new_head);
+    } else {
+        print!("{}", "[Fail] after remove: ".red());
+        print_list(new_head);
+    }
+}
+
+
 fn main() {
     let head = to_list(vec![1, 2, 6, 3, 4, 5, 6]);
-    print!("before remove: ");
-    print_list(head.clone());
-    let new_head = Solution::remove_elements(head, 6);
-    print!("after remove: ");
-    print_list(new_head);
+    let expected_head = to_list(vec![1, 2, 3, 4, 5]);
+    let val = 6;
+    case_test(head, val, expected_head);
+    println!("{}", "---".blue());
 
     let head = to_list(vec![7,7,7,7]);
-    print!("before remove: ");
-    print_list(head.clone());
-    let new_head = Solution::remove_elements(head, 7);
-    print!("after remove: ");
-    print_list(new_head);
+    let expected_head = None;
+    let val = 7;
+    case_test(head, val, expected_head);
 }
 
 
@@ -54,7 +67,7 @@ mod tests {
     fn test_remove_elements_2() {
         let head = to_list(vec![7,7,7,7,7]);
         let new_head = Solution::remove_elements(head, 7);
-        let expected = to_list(vec![]);
+        let expected = None;
         assert_eq!(new_head, expected);
     }
 }
