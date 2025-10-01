@@ -18,7 +18,7 @@ impl Solution {
             stack.push(n);
         }
 
-        nums1.iter().map(|&n| *map.get(&n).unwrap_or(&-1)).collect()
+        nums1.iter().map(|pn| *map.get(pn).unwrap_or(&-1)).collect()
     }
 }
 
