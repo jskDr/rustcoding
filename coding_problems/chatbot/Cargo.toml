@@ -14,3 +14,6 @@ futures-util = "0.3"
 indicatif = "0.18"
 bytes = "1.10.1"
 home = "0.5"
+
+[workspace]
+resolver = "3"
