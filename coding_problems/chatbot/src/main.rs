@@ -5,11 +5,12 @@ use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::env;
+use std::fs;
 use std::io::{self, Write};
 
 #[derive(Serialize)]
-struct ChatRequest {
-    model: &'static str,
+struct ChatRequest<'a> {
+    model: &'a str,
     messages: Vec<Message>,
     stream: bool,
     temperature: f32,
@@ -40,13 +41,20 @@ struct Delta {
     content: Option<String>,
 }
 
-const MODEL: &str = "llama-3.1-8b-instant";
+#[derive(Deserialize, Debug)]
+struct Config {
+    models: Vec<String>,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = Client::new();
     let term = console::Term::stdout();
     let styled = Styled::new();
+
+    let config_str = fs::read_to_string("src/conf.json").context("Failed to read config file")?;
+    let config: Config = serde_json::from_str(&config_str).context("Failed to parse config file")?;
+    let mut model = config.models[0].clone();
 
     term.write_line(&format!(
         "{} {}",
@@ -56,11 +64,15 @@ async fn main() -> Result<()> {
     term.write_line(&format!(
         "{} {}",
         style("Model:").bold().blue(),
-        style(MODEL).yellow()
+        style(&model).yellow()
     ))?;
     term.write_line(&format!(
         "{}",
         style("Type 'exit' or 'quit' to end the conversation.").italic()
+    ))?;
+    term.write_line(&format!(
+        "{}",
+        style("Type '/model' to see available models.").italic()
     ))?;
     term.write_line("")?;
 
@@ -79,13 +91,39 @@ async fn main() -> Result<()> {
             continue;
         }
 
+        if user_input == "/model" {
+            term.write_line("Available models:")?;
+            for (i, m) in config.models.iter().enumerate() {
+                term.write_line(&format!("  {}: {}", i + 1, m))?;
+            }
+            term.write_str("Select a model (number): ")?;
+            term.flush()?;
+            let mut selection = String::new();
+            io::stdin().read_line(&mut selection)?;
+            if let Ok(selection) = selection.trim().parse::<usize>() {
+                if selection > 0 && selection <= config.models.len() {
+                    model = config.models[selection - 1].clone();
+                    term.write_line(&format!(
+                        "{} {}",
+                        style("Model set to:").bold().blue(),
+                        style(&model).yellow()
+                    ))?;
+                } else {
+                    term.write_line(&style("Invalid selection.").red().to_string())?;
+                }
+            } else {
+                term.write_line(&style("Invalid input.").red().to_string())?;
+            }
+            continue;
+        }
+
         messages.push(Message {
             role: "user".to_string(),
             content: user_input,
         });
 
         let assistant_response =
-            stream_completion(&client, MODEL, messages.clone(), &styled).await?;
+            stream_completion(&client, &model, messages.clone(), &styled).await?;
         messages.push(Message {
             role: "assistant".to_string(),
             content: assistant_response,
@@ -112,7 +150,7 @@ fn get_user_input(styled: &Styled) -> Result<Option<String>> {
 
 async fn stream_completion(
     client: &Client,
-    model: &'static str,
+    model: &str,
     messages: Vec<Message>,
     styled: &Styled,
 ) -> Result<String> {
