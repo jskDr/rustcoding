@@ -545,6 +545,7 @@ dependencies = [
  "bytes",
  "console",
  "futures-util",
+ "home",
  "indicatif",
  "reqwest",
  "serde",
