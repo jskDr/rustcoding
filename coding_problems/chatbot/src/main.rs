@@ -34,7 +34,7 @@ async fn main() -> Result<()> {
     let api_key = env::var("GROQ_API_KEY")
         .context("GROQ_API_KEY environment variable is required")?;
     let client = Client::new();
-    let model = "llama-3.1-8b-instant"; // You can change this to another Groq model
+    let model = "deepseek-r1-distill-llama-70b"; // You can change this to another Groq model
 
     let mut messages = vec![
         Message {
