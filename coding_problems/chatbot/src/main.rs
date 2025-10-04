@@ -7,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use std::env;
 use std::fs;
 use std::io::{self, Write};
+use home;
 
 #[derive(Serialize)]
 struct ChatRequest<'a> {
@@ -49,6 +50,46 @@ struct Config {
     reaoning_effor_support_models: Vec<String>,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
+struct AppState {
+    model: String,
+    reasoning_effort: Option<String>,
+}
+
+impl AppState {
+    fn default(config: &Config) -> Self {
+        Self {
+            model: config.models[0].clone(),
+            reasoning_effort: None,
+        }
+    }
+}
+
+fn load_state(config: &Config) -> AppState {
+    let state_path = match home::home_dir() {
+        Some(path) => path.join(".rustagent"),
+        None => return AppState::default(config),
+    };
+
+    if let Ok(state_str) = fs::read_to_string(state_path) {
+        if let Ok(state) = serde_json::from_str(&state_str) {
+            return state;
+        }
+    }
+
+    AppState::default(config)
+}
+
+fn save_state(state: &AppState) -> Result<()> {
+    let state_path = match home::home_dir() {
+        Some(path) => path.join(".rustagent"),
+        None => return Ok(()),
+    };
+    let state_str = serde_json::to_string_pretty(state)?;
+    fs::write(state_path, state_str)?;
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let client = Client::new();
@@ -57,8 +98,9 @@ async fn main() -> Result<()> {
 
     let config_str = fs::read_to_string("src/conf.json").context("Failed to read config file")?;
     let config: Config = serde_json::from_str(&config_str).context("Failed to parse config file")?;
-    let mut model = config.models[0].clone();
-    let mut reasoning_effort: Option<String> = None;
+    let mut app_state = load_state(&config);
+    let mut model = app_state.model.clone();
+    let mut reasoning_effort = app_state.reasoning_effort.clone();
 
     term.write_line(&format!(
         "{} {}",
@@ -88,7 +130,10 @@ async fn main() -> Result<()> {
     loop {
         let user_input = match get_user_input(&styled)? {
             Some(input) => input,
-            None => break,
+            None => {
+                save_state(&app_state)?;
+                break;
+            }
         };
 
         if user_input.is_empty() {
@@ -106,7 +151,8 @@ async fn main() -> Result<()> {
             io::stdin().read_line(&mut selection)?;
             if let Ok(selection) = selection.trim().parse::<usize>() {
                 if selection > 0 && selection <= config.models.len() {
-                    model = config.models[selection - 1].clone();
+                    app_state.model = config.models[selection - 1].clone();
+                    model = app_state.model.clone();
                     term.write_line(&format!(
                         "{} {}",
                         style("Model set to:").bold().blue(),
@@ -121,6 +167,7 @@ async fn main() -> Result<()> {
                         io::stdin().read_line(&mut effort_selection)?;
                         let effort_selection = effort_selection.trim().to_lowercase();
                         if ["low", "medium", "high"].contains(&effort_selection.as_str()) {
+                            app_state.reasoning_effort = Some(effort_selection.clone());
                             reasoning_effort = Some(effort_selection);
                             term.write_line(&format!(
                                 "{} {}",
@@ -129,9 +176,11 @@ async fn main() -> Result<()> {
                             ))?;
                         } else {
                             term.write_line(&style("Invalid selection. Defaulting to no reasoning effort.").red().to_string())?;
+                            app_state.reasoning_effort = None;
                             reasoning_effort = None;
                         }
                     } else {
+                        app_state.reasoning_effort = None;
                         reasoning_effort = None;
                     }
                 } else {
