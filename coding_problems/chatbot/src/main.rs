@@ -14,6 +14,8 @@ struct ChatRequest<'a> {
     messages: Vec<Message>,
     stream: bool,
     temperature: f32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reasoning_effort: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -44,6 +46,7 @@ struct Delta {
 #[derive(Deserialize, Debug)]
 struct Config {
     models: Vec<String>,
+    reaoning_effor_support_models: Vec<String>,
 }
 
 #[tokio::main]
@@ -55,6 +58,7 @@ async fn main() -> Result<()> {
     let config_str = fs::read_to_string("src/conf.json").context("Failed to read config file")?;
     let config: Config = serde_json::from_str(&config_str).context("Failed to parse config file")?;
     let mut model = config.models[0].clone();
+    let mut reasoning_effort: Option<String> = None;
 
     term.write_line(&format!(
         "{} {}",
@@ -108,12 +112,35 @@ async fn main() -> Result<()> {
                         style("Model set to:").bold().blue(),
                         style(&model).yellow()
                     ))?;
+
+                    if config.reaoning_effor_support_models.contains(&model) {
+                        term.write_line("This model supports reasoning effort.")?;
+                        term.write_str("Select reasoning effort (low, medium, high): ")?;
+                        term.flush()?;
+                        let mut effort_selection = String::new();
+                        io::stdin().read_line(&mut effort_selection)?;
+                        let effort_selection = effort_selection.trim().to_lowercase();
+                        if ["low", "medium", "high"].contains(&effort_selection.as_str()) {
+                            reasoning_effort = Some(effort_selection);
+                            term.write_line(&format!(
+                                "{} {}",
+                                style("Reasoning effort set to:").bold().blue(),
+                                style(reasoning_effort.as_ref().unwrap()).yellow()
+                            ))?;
+                        } else {
+                            term.write_line(&style("Invalid selection. Defaulting to no reasoning effort.").red().to_string())?;
+                            reasoning_effort = None;
+                        }
+                    } else {
+                        reasoning_effort = None;
+                    }
                 } else {
                     term.write_line(&style("Invalid selection.").red().to_string())?;
                 }
             } else {
                 term.write_line(&style("Invalid input.").red().to_string())?;
             }
+            println!();
             continue;
         }
 
@@ -122,12 +149,19 @@ async fn main() -> Result<()> {
             content: user_input,
         });
 
-        let assistant_response =
-            stream_completion(&client, &model, messages.clone(), &styled).await?;
+        let assistant_response = stream_completion(
+            &client,
+            &model,
+            messages.clone(),
+            &styled,
+            reasoning_effort.clone(),
+        )
+        .await?;
         messages.push(Message {
             role: "assistant".to_string(),
             content: assistant_response,
         });
+        println!();
     }
 
     Ok(())
@@ -144,7 +178,7 @@ fn get_user_input(styled: &Styled) -> Result<Option<String>> {
         println!("{}", style("Goodbye!").dim());
         return Ok(None);
     }
-
+    println!();
     Ok(Some(input))
 }
 
@@ -153,6 +187,7 @@ async fn stream_completion(
     model: &str,
     messages: Vec<Message>,
     styled: &Styled,
+    reasoning_effort: Option<String>,
 ) -> Result<String> {
     let api_key = env::var("GROQ_API_KEY").context("GROQ_API_KEY not set")?;
     let request = ChatRequest {
@@ -160,6 +195,7 @@ async fn stream_completion(
         messages,
         stream: true,
         temperature: 0.7,
+        reasoning_effort,
     };
 
     let progress_bar = new_progress_bar();

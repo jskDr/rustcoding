@@ -1,6 +1,12 @@
 {
     "models": [
         "llama-3.1-8b-instant",
-        "deepseek-r1-distill-llama-70b"
+        "deepseek-r1-distill-llama-70b",
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b"
+    ],
+    "reaoning_effor_support_models": [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b"
     ]
 }
