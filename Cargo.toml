@@ -1,5 +1,5 @@
 [workspace]
-members = [
+members = ["coding_problems/chatbot",
     "coding_problems/container_with_most_water",
     "coding_problems/delete_duplicates",
     "coding_problems/delete_nodes_linked_list",
