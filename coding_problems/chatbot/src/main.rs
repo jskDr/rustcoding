@@ -1,7 +1,6 @@
-// src/main.rs
 use anyhow::{Context, Result};
 use console::{style, Style};
-use futures_util::StreamExt;
+use futures_util::{Stream, StreamExt};
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
@@ -13,6 +12,7 @@ struct ChatRequest {
     model: &'static str,
     messages: Vec<Message>,
     stream: bool,
+    temperature: f32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -28,10 +28,19 @@ struct ChatCompletionChunk {
 
 #[derive(Deserialize, Debug)]
 struct ChatCompletionChoice {
-    delta: Message,
+    delta: Delta,
+    #[allow(dead_code)]
+    finish_reason: Option<String>,
 }
 
-const MODEL: &str = "llama3-8b-8192";
+#[derive(Deserialize, Debug)]
+struct Delta {
+    #[allow(dead_code)]
+    role: Option<String>,
+    content: Option<String>,
+}
+
+const MODEL: &str = "llama-3.1-8b-instant";
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -61,7 +70,11 @@ async fn main() -> Result<()> {
     }];
 
     loop {
-        let user_input = get_user_input(&styled)?;
+        let user_input = match get_user_input(&styled)? {
+            Some(input) => input,
+            None => break,
+        };
+
         if user_input.is_empty() {
             continue;
         }
@@ -78,9 +91,11 @@ async fn main() -> Result<()> {
             content: assistant_response,
         });
     }
+
+    Ok(())
 }
 
-fn get_user_input(styled: &Styled) -> Result<String> {
+fn get_user_input(styled: &Styled) -> Result<Option<String>> {
     let mut input = String::new();
     print!("{}", styled.user_prompt());
     io::stdout().flush()?;
@@ -88,10 +103,11 @@ fn get_user_input(styled: &Styled) -> Result<String> {
     let input = input.trim().to_string();
 
     if input.eq_ignore_ascii_case("exit") || input.eq_ignore_ascii_case("quit") {
-        std::process::exit(0);
+        println!("{}", style("Goodbye!").dim());
+        return Ok(None);
     }
 
-    Ok(input)
+    Ok(Some(input))
 }
 
 async fn stream_completion(
@@ -105,6 +121,7 @@ async fn stream_completion(
         model,
         messages,
         stream: true,
+        temperature: 0.7,
     };
 
     let progress_bar = new_progress_bar();
@@ -113,44 +130,86 @@ async fn stream_completion(
     let response = client
         .post("https://api.groq.com/openai/v1/chat/completions")
         .header("Authorization", format!("Bearer {}", api_key))
+        .header("Content-Type", "application/json")
+        .header("Accept", "text/event-stream")
         .json(&request)
         .send()
         .await
-        .context("Failed to send request")?;
+        .context("Failed to send request")?
+        .error_for_status()
+        .context("Non-success status from API")?;
 
     progress_bar.finish_and_clear();
 
-    let mut stream = response.bytes_stream();
+    let stream = response.bytes_stream();
+    process_sse_stream(stream, styled).await
+}
+
+async fn process_sse_stream(
+    mut stream: impl Stream<Item = Result<bytes::Bytes, reqwest::Error>> + Unpin,
+    styled: &Styled,
+) -> Result<String> {
+    let mut buffer = String::new();
     let mut full_response = String::new();
+    let mut done = false;
 
     print!("{}", styled.assistant_prompt());
     io::stdout().flush()?;
 
     while let Some(item) = stream.next().await {
         let chunk = item.context("Failed to read chunk")?;
-        let chunk_str = String::from_utf8_lossy(&chunk);
+        buffer.push_str(&String::from_utf8_lossy(&chunk));
 
-        for line in chunk_str.lines() {
-            if line.starts_with("data:") {
-                let data = &line[5..].trim();
-                if *data == "[DONE]" {
+        while let Some(idx) = buffer.find("\n\n") {
+            let frame = &buffer[..idx];
+
+            for line in frame.lines() {
+                if !line.starts_with("data:") {
+                    continue;
+                }
+                let data = line.trim_start_matches("data:").trim();
+
+                if data == "[DONE]" {
+                    done = true;
                     break;
                 }
-                if let Ok(chunk) = serde_json::from_str::<ChatCompletionChunk>(data) {
-                    if let Some(choice) = chunk.choices.first() {
-                        let content = &choice.delta.content;
-                        print!("{}", content);
-                        io::stdout().flush()?;
-                        full_response.push_str(content);
+
+                match serde_json::from_str::<ChatCompletionChunk>(data) {
+                    Ok(chunk) => {
+                        if let Some(choice) = chunk.choices.first() {
+                            if let Some(content) = &choice.delta.content {
+                                print!("{}", style(content).green());
+                                io::stdout().flush()?;
+                                full_response.push_str(content);
+                            }
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "\n{} {}",
+                            style("[Error]").red().bold(),
+                            style(format!("Failed to parse response chunk: {}", e)).red()
+                        );
                     }
                 }
             }
+
+            buffer.drain(..idx + 2);
+
+            if done {
+                break;
+            }
+        }
+
+        if done {
+            break;
         }
     }
 
     println!();
     Ok(full_response)
 }
+
 
 struct Styled {
     user: Style,
@@ -160,16 +219,16 @@ struct Styled {
 impl Styled {
     fn new() -> Self {
         Self {
-            user: Style::new().bold().cyan(),
-            assistant: Style::new().bold().green(),
+            user: Style::new().cyan().bold(),
+            assistant: Style::new().green().bold(),
         }
     }
 
-    fn user_prompt(&self) -> console::StyledObject<&str> {
+    fn user_prompt(&self) -> console::StyledObject<&'static str> {
         self.user.apply_to("You: ")
     }
 
-    fn assistant_prompt(&self) -> console::StyledObject<&str> {
+    fn assistant_prompt(&self) -> console::StyledObject<&'static str> {
         self.assistant.apply_to("RustAgent: ")
     }
 }
