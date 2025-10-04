@@ -1,0 +1,22 @@
+[workspace]
+members = [
+    "coding_problems/container_with_most_water",
+    "coding_problems/delete_duplicates",
+    "coding_problems/delete_nodes_linked_list",
+    "coding_problems/hello",
+    "coding_problems/hello_actix",
+    "coding_problems/invert_tree",
+    "coding_problems/is_palindrome",
+    "coding_problems/is_subsequence",
+    "coding_problems/merge_two_lists",
+    "coding_problems/next_greater_element_1",
+    "coding_problems/remove_linked_list_elements",
+    "coding_problems/remove_nodes_from_linked_list",
+    "coding_problems/rust_coding_lib",
+    "coding_problems/same_tree",
+    "coding_problems/top_k_frequent",
+    "coding_problems/two_sum", "coding_problems/valid_parentheses",
+    "coding_problems/zigzag_level_order",
+    "jupyter/my_utils",
+    "jupyter/nb_prelude",
+]
