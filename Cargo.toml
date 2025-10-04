@@ -1,5 +1,6 @@
 [workspace]
-members = ["coding_problems/chatbot",
+members = [
+    "coding_problems/chatbot",
     "coding_problems/container_with_most_water",
     "coding_problems/delete_duplicates",
     "coding_problems/delete_nodes_linked_list",
@@ -15,8 +16,9 @@ members = ["coding_problems/chatbot",
     "coding_problems/rust_coding_lib",
     "coding_problems/same_tree",
     "coding_problems/top_k_frequent",
-    "coding_problems/two_sum", "coding_problems/valid_parentheses",
+    "coding_problems/two_sum",
+    "coding_problems/valid_parentheses",
     "coding_problems/zigzag_level_order",
     "jupyter/my_utils",
-    "jupyter/nb_prelude",
+    "jupyter/nb_prelude"
 ]
