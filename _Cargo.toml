@@ -9,7 +9,7 @@ members = [
     "coding_problems/invert_tree",
     "coding_problems/is_palindrome",
     "coding_problems/is_subsequence",
-    "coding_problems/merge_two_lists",
+    "coding_problems/merge_two_lists", "coding_problems/merge_two_lists_v2",
     "coding_problems/next_greater_element_1",
     "coding_problems/remove_linked_list_elements",
     "coding_problems/remove_nodes_from_linked_list",

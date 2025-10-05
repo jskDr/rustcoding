@@ -1,0 +1,7 @@
+[package]
+name = "merge_two_lists_v2"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+rust_coding_lib = {path = "../rust_coding_lib"}
