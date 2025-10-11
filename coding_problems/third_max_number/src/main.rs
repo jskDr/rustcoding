@@ -1,5 +1,4 @@
 struct Solution;
-
 impl Solution {
     pub fn third_max(nums: Vec<i32>) -> i32 {
         let mut h = vec![None;3];
@@ -27,8 +26,39 @@ impl Solution {
     }
 }
 
+struct Solution1;
+use std::collections::BinaryHeap;
+use std::collections::HashSet;
+use std::cmp::Reverse;
+impl Solution1 {
+    pub fn third_max(nums: Vec<i32>) -> i32 {
+        let mut h = BinaryHeap::new();
+        let mut mx = i32::MIN;
+        let nums: HashSet<_> = nums.into_iter().collect();
+
+        for n in nums {
+            if h.len() < 3 {
+                h.push(Reverse(n));
+            }
+            else if h.peek().map_or(false, |v| v > &Reverse(n)) {
+                h.pop();
+                h.push(Reverse(n));
+            } 
+            mx = mx.max(n);
+        }
+        if h.len() < 3 {
+            mx
+        }
+        else {
+            h.peek().unwrap().0
+        }
+    }
+}
+
+
 fn main() {
-    println!("{}", Solution::third_max(vec![1,2,3,4,5]));
+    println!("{} == 3", Solution::third_max(vec![1,2,3,4,5]));
+    println!("{} == 3", Solution1::third_max(vec![1,2,3,4,5]));
 }
 
 #[cfg(test)]
