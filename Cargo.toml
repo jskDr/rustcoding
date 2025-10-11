@@ -20,6 +20,7 @@ members = [
     "coding_problems/two_sum",
     "coding_problems/valid_parentheses",
     "coding_problems/zigzag_level_order",
+    "coding_problems/third_max_number",
     "jupyter/my_utils",
     "jupyter/nb_prelude"
 ]
