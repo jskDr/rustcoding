@@ -3,6 +3,7 @@ struct Solution;
 impl Solution {
     pub fn max_distinct_elements(mut nums: Vec<i32>, k: i32) -> i32 {
         nums.sort();
+        // nums.sort_by(|a,b| a.cmp(&b));
         let mut prev = i32::MIN;
         let mut cnt = 0;
         for n in nums {
