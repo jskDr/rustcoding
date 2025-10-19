@@ -21,6 +21,7 @@ members = [
     "coding_problems/valid_parentheses",
     "coding_problems/zigzag_level_order",
     "coding_problems/third_max_number",
+    "coding_problems/max_distinct_elements",
     "jupyter/my_utils",
     "jupyter/nb_prelude"
 ]
