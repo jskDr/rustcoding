@@ -38,7 +38,7 @@ mod tests {
             assert_eq!(
                 is_subsequence(s.to_string(), t.to_string()),
                 expected,
-                "Failed on s={{:?}}, t={{:?}}",
+                "Failed on s={:?}, t={:?}",
                 s,
                 t
             );
