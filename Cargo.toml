@@ -18,12 +18,10 @@ members = [
     "coding_problems/two_sum",
     "coding_problems/valid_parentheses",
     "coding_problems/zigzag_level_order",
-    "jupyter/my_utils",
-    "jupyter/nb_prelude",
     "coding_problems/LinkedList/add_two_numbers",
     "coding_problems/LinkedList/delete_nodes_linked_list",
     "coding_problems/LinkedList/merge_two_lists",
     "coding_problems/LinkedList/merge_two_lists_v2",
     "coding_problems/LinkedList/remove_linked_list_elements",
-    "coding_problems/LinkedList/remove_nodes_from_linked_list",
+    "coding_problems/LinkedList/remove_nodes_from_linked_list", "coding_problems/word_break",
 ]
