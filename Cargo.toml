@@ -23,5 +23,8 @@ members = [
     "coding_problems/LinkedList/merge_two_lists",
     "coding_problems/LinkedList/merge_two_lists_v2",
     "coding_problems/LinkedList/remove_linked_list_elements",
-    "coding_problems/LinkedList/remove_nodes_from_linked_list", "coding_problems/word_break",
+    "coding_problems/LinkedList/remove_nodes_from_linked_list", 
+    "coding_problems/word_break", 
+    "coding_problems/valid_palindrome2",
+    "rust_exercise/tokio_hello", 
 ]

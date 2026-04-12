@@ -1,2 +1,2 @@
-// notebook-prelude/src/lib.rs
+pub use ndarray;
 pub use polars;
