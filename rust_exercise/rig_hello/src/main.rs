@@ -2,6 +2,7 @@ use std::error::Error;
 use std::io::{Write, stdin, stdout};
 
 use futures::StreamExt;
+use rig::agent::Agent;
 use rig::agent::{MultiTurnStreamItem::StreamAssistantItem, StreamingResult};
 use rig::client::{CompletionClient, Nothing};
 use rig::completion::Prompt;
@@ -9,6 +10,9 @@ use rig::message::Message;
 use rig::providers::ollama;
 use rig::streaming::{StreamedAssistantContent, StreamingChat};
 use serde_json::json;
+
+// Type alias for the Ollama Agent to avoid repeating the generic parameter
+type OllamaAgent = Agent<ollama::CompletionModel>;
 
 // ANSI escape codes for colored text
 const GRAY: &str = "\x1b[90m";
@@ -38,9 +42,17 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut history: Vec<Message> = Vec::new();
     println!("English Teacher AI (with reviewer)");
     println!("Type /quit to exit.");
+    println!("Type /review to toggle review mode.");
     println!();
 
+    let mut review_mode = true;
+
     loop {
+        println!("[System status]");
+        println!("  Review mode: {}", review_mode);
+        println!("  History length: {}", history.len());
+        println!();
+
         print!("You: ");
         stdout().flush()?;
 
@@ -52,53 +64,27 @@ async fn main() -> Result<(), Box<dyn Error>> {
             continue;
         } else if input == "/quit" {
             break;
+        } else if input == "/review" {
+            review_mode = !review_mode;
+            println!("Review mode: {}", review_mode);
+            continue;
         }
 
-        // Get teacher's streaming response
-        println!("{CYAN}[Teacher]{RESET}");
-        let stream = teacher.stream_chat(&input, &history).await;
-        let mut assistant_reply = stream_responses(stream).await?;
+        // 1. Get the teacher's initial streaming response
+        print!("{CYAN}Teacher: {RESET}");
+        let stream = teacher.stream_chat(&input, history.clone()).await;
+        let assistant_reply = stream_responses(stream).await?;
 
-        // Review loop: let reviewer check, retry if problematic
-        for retry in 0..MAX_RETRIES {
-            let review_prompt = format!(
-                "Student said: \"{input}\"\n\nTeacher replied: \"{assistant_reply}\"\n\nIs this response OK?"
-            );
-
-            println!("{YELLOW}[Reviewer checking...]{RESET}");
-            let review_result = reviewer.prompt(&review_prompt).await?;
-            let review_text = review_result.to_string();
-
-            if review_text.trim().starts_with("OK") {
-                println!("{YELLOW}[Reviewer: OK ✓]{RESET}");
-                break;
-            } else {
-                println!("{YELLOW}[Reviewer: {review_text}]{RESET}");
-
-                if retry < MAX_RETRIES - 1 {
-                    // Feed the feedback back to the teacher for a corrected response
-                    let correction_prompt = format!(
-                        "A reviewer found a problem with your previous response. \
-                         Feedback: {review_text}\n\n\
-                         Please correct your response to the student who said: \"{input}\""
-                    );
-
-                    println!("{CYAN}[Teacher retrying...]{RESET}");
-                    let mut retry_history = history.clone();
-                    retry_history.push(Message::user(&input));
-                    retry_history.push(Message::assistant(&assistant_reply));
-
-                    let stream = teacher
-                        .stream_chat(&correction_prompt, &retry_history)
-                        .await;
-                    assistant_reply = stream_responses(stream).await?;
-                }
-            }
-        }
+        let final_reply = if review_mode {
+            // 2. Review and potentially retry
+            review_response(&teacher, &reviewer, &input, &assistant_reply, &history).await?
+        } else {
+            assistant_reply
+        };
 
         // Append final user message and assistant reply to history
         history.push(Message::user(&input));
-        history.push(Message::assistant(&assistant_reply));
+        history.push(Message::assistant(&final_reply));
     }
 
     Ok(())
@@ -152,4 +138,53 @@ async fn stream_responses<R>(mut stream: StreamingResult<R>) -> Result<String, B
     }
 
     Ok(full_reply)
+}
+
+/// Reviews the teacher's response and retries if the reviewer finds problems.
+async fn review_response(
+    teacher: &OllamaAgent,
+    reviewer: &OllamaAgent,
+    input: &str,
+    initial_reply: &str,
+    history: &[Message],
+) -> Result<String, Box<dyn Error>> {
+    let mut assistant_reply = initial_reply.to_string();
+
+    for retry in 0..MAX_RETRIES {
+        let review_prompt = format!(
+            "Student said: \"{input}\"\n\nTeacher replied: \"{assistant_reply}\"\n\nIs this response OK?"
+        );
+
+        println!("{YELLOW}[Reviewer checking...]{RESET}");
+        let review_result = reviewer.prompt(&review_prompt).await?;
+        let review_text = review_result.to_string();
+
+        if review_text.trim().starts_with("OK") {
+            println!("{YELLOW}[Reviewer: OK ✓]{RESET}");
+            break;
+        } else {
+            println!("{YELLOW}[Reviewer: {review_text}]{RESET}");
+
+            if retry < MAX_RETRIES - 1 {
+                // Feed the feedback back to the teacher for a corrected response
+                let correction_prompt = format!(
+                    "A reviewer found a problem with your previous response. \
+                    Feedback: {review_text}\n\n\
+                    Please correct your response to the student who said: \"{input}\""
+                );
+
+                println!("{CYAN}[Teacher retrying...]{RESET}");
+                let mut retry_history = history.to_vec();
+                retry_history.push(Message::user(input));
+                retry_history.push(Message::assistant(&assistant_reply));
+
+                let stream = teacher
+                    .stream_chat(&correction_prompt, retry_history)
+                    .await;
+                assistant_reply = stream_responses(stream).await?;
+            }
+        }
+    }
+
+    Ok(assistant_reply)
 }
