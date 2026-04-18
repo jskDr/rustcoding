@@ -40,19 +40,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .build();
 
     let mut history: Vec<Message> = Vec::new();
-    println!("English Teacher AI (with reviewer)");
-    println!("Type /quit to exit.");
-    println!("Type /review to toggle review mode.");
-    println!();
+    print_start();
 
     let mut review_mode = true;
 
     loop {
-        println!("[System status]");
-        println!("  Review mode: {}", review_mode);
-        println!("  History length: {}", history.len());
-        println!();
-
+        print_status(review_mode, &history);
         print!("You: ");
         stdout().flush()?;
 
@@ -88,6 +81,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
     }
 
     Ok(())
+}
+
+/// Print the start message
+fn print_start() {
+    println!("English Teacher AI (with reviewer)");
+    println!("Type /quit to exit.");
+    println!("Type /review to toggle review mode.");
+    println!();
+}
+
+/// Print the status message
+fn print_status(review_mode: bool, history: &[Message]) {
+    println!("[System status]");
+    println!("  Review mode: {}", review_mode);
+    println!("  History length: {}", history.len());
+    println!();
 }
 
 /// Streams the response to stdout, returns the full accumulated text.
