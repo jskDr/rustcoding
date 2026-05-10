@@ -1596,6 +1596,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "kth_smallest_prime_fraction"
+version = "0.1.0"
+
+[[package]]
 name = "lab"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"

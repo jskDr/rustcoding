@@ -26,5 +26,7 @@ members = [
     "coding_problems/LinkedList/remove_nodes_from_linked_list", 
     "coding_problems/word_break", 
     "coding_problems/valid_palindrome2",
-    "rust_exercise/tokio_hello", "rust_exercise/rig_hello", 
+    "rust_exercise/tokio_hello", 
+    "rust_exercise/rig_hello", 
+    "coding_problems/kth_smallest_prime_fraction", 
 ]

@@ -30,17 +30,38 @@ impl Solution {
         let s = s.as_bytes();
         helper(0, s.len()-1, &s, false)
     }
+
+    /// Checks if one deletion can make `s` a palindrome. (second solution)
+    pub fn valid_palindrome2(s: String) -> bool {
+        let s:Vec<_> = s.chars().collect();
+        let is_pal = |l: usize, r: usize| s[l..=r].iter().eq(s[l..=r].iter().rev());
+        let (mut st, mut ed) = (0, s.len()-1);
+        while st < ed {
+            if s[st] != s[ed] {
+                return is_pal(st + 1, ed) || is_pal(st, ed - 1);
+            }
+            st += 1;
+            ed -= 1;
+        }
+        true
+    }
+
 }
 
 /// Runs one sample check.
 fn _main_sync(task_idx: usize) -> bool {
     println!("Task index: {}", task_idx);
-    println!("Testing code for valid_palindrome2. Fpr more testing, please use: cargo test");
+
     let s = "abbca".to_string();
     println!("We are testing now: {}", s);
-    let result = Solution::valid_palindrome(s);
-    println!("Result: {} == true", result);
-    result
+    
+    let result1 = Solution::valid_palindrome(s.clone());
+    println!("Result1: {} == true", result1);
+
+    let results2 = Solution::valid_palindrome2(s);
+    println!("Result2: {} == true", results2);
+
+    result1 && results2
 }
 
 /// Runs sample tasks concurrently.
@@ -83,5 +104,24 @@ mod tests {
     fn test_3() {
         let s = "abbca".to_string();
         assert_eq!(Solution::valid_palindrome(s), true);
+    }
+
+    /// Tests one-removal success (second solution).
+    #[test]
+    fn test_4() {
+        let s = "abbca".to_string();
+        assert_eq!(Solution::valid_palindrome2(s), true);
+    }
+
+    #[test]
+    fn test_5() {
+        let s = "abbca".to_string();
+        assert_eq!(Solution::valid_palindrome2(s), true);
+    }
+
+    #[test]
+    fn test_6(){
+        let s = "raceacar".to_string();
+        assert_eq!(Solution::valid_palindrome2(s), true);
     }
 }
