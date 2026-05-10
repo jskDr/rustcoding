@@ -4,17 +4,22 @@
 Apply this skill whenever you incorporate information, guidelines, patterns, or summaries from an existing file into another document. This ensures traceability and allows users to find the source of truth.
 
 ## Standards & Constraints
-- **Format:** Use the `[@filename]` syntax for inline citations.
-- **Accuracy:** The filename must exactly match the relative path of the file being cited.
+- **Format:** Use the `[@filename]` or `[@path/to/filename]` syntax for inline citations.
+- **Accuracy:** The path or filename must exactly match the relative path or exact name of the file being cited.
 - **Placement:** 
     - Place inline citations immediately after the paragraph or sentence containing the cited information.
     - If the document has a `## References` or `## Citations` section, add a corresponding entry there.
 - **Prohibited:** Do not use vague references like "as mentioned in the documentation" or "see other files." Always specify the exact file.
 
+## Advanced Usage
+- **Multiple Citations:** If referencing multiple files, separate them with a semicolon: `[@file1.md; @file2.md]`.
+- **Granularity (Lines/Sections):** For large documents, append specific line numbers or sections if helpful: `[@filename#L10-L20]` or `[@filename#section-name]`.
+- **Spaces in Filenames:** If a filename contains spaces, enclose it in quotes: `[@"my file name.md"]`.
+
 ## Workflow
 1. **Identify the Source:** Determine which file(s) provided the information you are using.
-2. **Verify Existence:** Ensure the target file exists in the current working directory (using `ls` or `find` if unsure).
-3. **Insert Inline Citation:** Append `[@filename]` to the relevant text.
+2. **Verify Existence:** Ensure the target file exists in the repository using appropriate file search tools.
+3. **Insert Inline Citation:** Append `[@filename]` (or the appropriate advanced format) to the relevant text.
 4. **Update Reference Section:** 
     - Check if the target document already has a `## References` section.
     - If yes, add the file to the list.
@@ -30,16 +35,25 @@ Apply this skill whenever you incorporate information, guidelines, patterns, or 
 *(Wrong format)*
 
 ### ✅ Correct
-"The project follows the standard prompt engineering guidelines [@skill_how_to.md]."
+"The project follows the standard prompt engineering guidelines [@.pi/skill_how_to.md]."
+
+"The configuration relies on two key files [@config.yaml; @.env]."
+*(Multiple files cited correctly)*
+
+"Please refer to the logging section [@utils/logger.ts#L45-L60]."
+*(Specific lines cited correctly)*
 
 **And in the reference section:**
 ```markdown
 ## References
-- [@skill_how_to.md]: Guide on writing skill markdown files.
+- [@.pi/skill_how_to.md]: Guide on writing skill markdown files.
+- [@config.yaml]: Main application configuration.
+- [@.env]: Environment variables structure.
+- [@utils/logger.ts#L45-L60]: Details the initialization of the logging mechanism.
 ```
 
 ## Success Criteria
 - [ ] Every piece of external information is attributed to a specific file.
-- [ ] All citations use the `[@filename]` format.
+- [ ] All citations use the `[@filename]` or `[@path/filename]` format.
 - [ ] The cited files actually exist in the repository.
 - [ ] The Reference section (if applicable) is up-to-date.
