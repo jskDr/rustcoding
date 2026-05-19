@@ -28,5 +28,5 @@ members = [
     "coding_problems/valid_palindrome2",
     "rust_exercise/tokio_hello", 
     "rust_exercise/rig_hello", 
-    "coding_problems/kth_smallest_prime_fraction", 
+    "coding_problems/kth_smallest_prime_fraction", "coding_problems/has_cycle", 
 ]
